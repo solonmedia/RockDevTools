@@ -1,3 +1,10 @@
+## [1.8.0](https://github.com/baumrock/RockDevTools/compare/v1.7.0...v1.8.0) (2026-02-23)
+
+
+### Features
+
+* add auto-login redirect setting (empty = page id 2) ([04d98c5](https://github.com/baumrock/RockDevTools/commit/04d98c57be159a670b9f9ee08c6c1c43b83fa7a7))
+
 ## [1.7.0](https://github.com/baumrock/RockDevTools/compare/v1.6.0...v1.7.0) (2026-02-23)
 
 
@@ -41,11 +48,4 @@
 ### Bug Fixes
 
 * make scripttag public (for ajax endpoints) ([4042708](https://github.com/baumrock/RockDevTools/commit/4042708938aea6efa88c0a14373574eb3e00de25))
-
-## [1.4.1](https://github.com/baumrock/RockDevTools/compare/v1.4.0...v1.4.1) (2025-03-31)
-
-
-### Bug Fixes
-
-* SCSS Compiler throws an error when you only have one scss file [#3](https://github.com/baumrock/RockDevTools/issues/3) ([198918c](https://github.com/baumrock/RockDevTools/commit/198918c5b47044c4af8be7d1b7dc34a17641aa95))
 
