@@ -20,6 +20,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 class RockDevTools extends WireData implements Module, ConfigurableModule
 {
   public $debugAssetTools = false;
+  public $autoLogin = false;
   public $livereload;
 
   private $rockcss = false;
@@ -55,6 +56,31 @@ class RockDevTools extends WireData implements Module, ConfigurableModule
     // hooks
     wire()->addHookAfter('Modules::refresh', $this, 'resetCache');
     wire()->addHookAfter('Page::render', $this->livereload, 'addLiveReloadMarkup');
+
+    $this->addAutoLoginHook();
+  }
+
+  /**
+   * Add auto-login URL hook only when debug + DDEV + autoLogin enabled.
+   */
+  protected function addAutoLoginHook(): void
+  {
+    if (!wire()->config->debug) return;
+    if (!getenv('DDEV_HOSTNAME')) return;
+    if (!$this->autoLogin) return;
+
+    wire()->addHook('/auto-login', $this, 'autoLogin');
+  }
+
+  /**
+   * Force login as superuser and redirect to admin (called by /auto-login hook).
+   */
+  public function autoLogin(HookEvent $event): void
+  {
+    $user = wire()->users->get('roles=superuser');
+    if (!$user->id) return;
+    wire()->session->forceLogin($user);
+    wire()->session->redirect(wire()->pages->get(2)->url);
   }
 
   public function assets(?string $root = null): Assets
@@ -77,6 +103,14 @@ class RockDevTools extends WireData implements Module, ConfigurableModule
       'name' => 'debugAssetTools',
       'checked' => $this->debugAssetTools,
       'notes' => 'If enabled, the asset tools will log debug information to the Tracy debug bar.',
+    ]);
+
+    $inputfields->add([
+      'type' => 'checkbox',
+      'label' => 'Auto Login',
+      'name' => 'autoLogin',
+      'checked' => $this->autoLogin,
+      'notes' => 'When enabled (and only when debug mode + DDEV), visiting /auto-login will log in as superuser and redirect to the admin. Useful for manual login or browser automation.',
     ]);
 
     return $inputfields;
