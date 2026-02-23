@@ -21,6 +21,8 @@ class RockDevTools extends WireData implements Module, ConfigurableModule
 {
   public $debugAssetTools = false;
   public $autoLogin = false;
+  /** @var string Redirect path after auto-login. Empty = default (page id 2). */
+  public $autoLoginRedirect = '';
   public $livereload;
 
   private $rockcss = false;
@@ -73,14 +75,18 @@ class RockDevTools extends WireData implements Module, ConfigurableModule
   }
 
   /**
-   * Force login as superuser and redirect to admin (called by /auto-login hook).
+   * Force login as superuser and redirect (called by /auto-login hook).
+   * Redirect target: autoLoginRedirect if set, otherwise page id 2.
    */
   public function autoLogin(HookEvent $event): void
   {
     $user = wire()->users->get('roles=superuser');
     if (!$user->id) return;
     wire()->session->forceLogin($user);
-    wire()->session->redirect(wire()->pages->get(2)->url);
+    $url = trim((string) $this->autoLoginRedirect) !== ''
+      ? wire()->config->urls->root . ltrim($this->autoLoginRedirect, '/')
+      : wire()->pages->get(2)->url;
+    wire()->session->redirect($url);
   }
 
   public function assets(?string $root = null): Assets
@@ -110,7 +116,17 @@ class RockDevTools extends WireData implements Module, ConfigurableModule
       'label' => 'Auto Login',
       'name' => 'autoLogin',
       'checked' => $this->autoLogin,
-      'notes' => 'When enabled (and only when debug mode + DDEV), visiting /auto-login will log in as superuser and redirect to the admin. Useful for manual login or browser automation.',
+      'notes' => 'When enabled (and only when debug mode + DDEV), visiting /auto-login will log in as superuser and redirect. Useful for manual login or browser automation.',
+    ]);
+
+    $inputfields->add([
+      'type' => 'text',
+      'label' => 'Auto Login Redirect',
+      'name' => 'autoLoginRedirect',
+      'value' => $this->autoLoginRedirect,
+      'placeholder' => '',
+      'notes' => 'Path to redirect to after auto-login (e.g. /tool). Empty = default (page id 2).',
+      'showIf' => 'autoLogin=1',
     ]);
 
     return $inputfields;
